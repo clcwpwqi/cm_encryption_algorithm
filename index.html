@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CM加解密工具</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap">
+    <style>
+        :root {
+            /* 主色调 - 可自定义 */
+            --primary-color: #4e54c8;
+            --primary-light: #7c81e0;
+            --primary-dark: #363b9e;
+            
+            /* 辅助色 */
+            --secondary-color: #ff6b6b;
+            --success-color: #06d6a0;
+            --warning-color: #ffd166;
+            
+            /* 文本颜色 */
+            --text-primary: #2d3748;
+            --text-secondary: #718096;
+            
+            /* 背景颜色 */
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --surface-bg: #e9ecef;
+            
+            /* 阴影 */
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.15);
+            --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+            
+            /* 圆角 */
+            --border-radius: 12px;
+            --element-radius: 8px;
+            
+            /* 过渡效果 */
+            --transition: all 0.3s ease;
+        }
+        
+        [data-theme="dark"] {
+            --primary-color: #7c81e0;
+            --primary-light: #9fa4ff;
+            --primary-dark: #4e54c8;
+            
+            --text-primary: #e2e8f0;
+            --text-secondary: #a0aec0;
+            
+            --bg-color: #121826;
+            --card-bg: #1a202c;
+            --surface-bg: #2d3748;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            transition: var(--transition);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* 头部样式 */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--surface-bg);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .logo-text h1 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .logo-text p {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        .header-controls {
+            display: flex;
+            gap: 15px;
+        }
+        
+        /* 按钮样式 */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--element-radius);
+            font-family: inherit;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+            color: white;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .btn-primary:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .btn-icon {
+            padding: 8px 12px;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+        }
+        
+        /* 主功能区 */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .card {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            transition: var(--transition);
+        }
+        
+        .card-header {
+            padding: 20px;
+            background-color: var(--surface-bg);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card-body {
+            padding: 20px;
+        }
+        
+        /* 输入框样式 */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        
+        textarea, input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--surface-bg);
+            border-radius: var(--element-radius);
+            background-color: var(--card-bg);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 15px;
+            transition: var(--transition);
+        }
+        
+        textarea:focus, input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(78, 84, 200, 0.2);
+        }
+        
+        textarea {
+            min-height: 200px;
+            resize: vertical;
+        }
+        
+        .char-count {
+            text-align: right;
+            margin-top: 5px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        
+        .key-input {
+            position: relative;
+        }
+        
+        .key-strength {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        
+        .strength-meter {
+            flex: 1;
+            height: 4px;
+            background-color: var(--surface-bg);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .strength-fill {
+            height: 100%;
+            width: 0;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+        
+        /* 模式切换 */
+        .mode-toggle {
+            display: flex;
+            background-color: var(--surface-bg);
+            border-radius: var(--element-radius);
+            padding: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .mode-btn {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            border-radius: var(--element-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+        
+        .mode-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        /* 操作按钮 */
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        /* 结果卡片 */
+        .result-card {
+            margin-top: 20px;
+        }
+        
+        /* 底部样式 */
+        footer {
+            margin-top: auto;
+            padding: 30px 0;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 14px;
+            border-top: 1px solid var(--surface-bg);
+        }
+        
+        .github-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            margin-top: 10px;
+            transition: var(--transition);
+        }
+        
+        .github-link:hover {
+            color: var(--primary-color);
+        }
+        
+        /* 弹窗样式 */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+        }
+        
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            transform: translateY(20px);
+            transition: var(--transition);
+        }
+        
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+        
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--surface-bg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: var(--transition);
+        }
+        
+        .close-btn:hover {
+            color: var(--primary-color);
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .info-section {
+            margin-bottom: 20px;
+        }
+        
+        .info-section h3 {
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+        
+        .info-points {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        @media (max-width: 600px) {
+            .info-points {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .info-point {
+            background-color: var(--surface-bg);
+            padding: 15px;
+            border-radius: var(--element-radius);
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .info-point h4 {
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* 加载动画 */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 15px;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(78, 84, 200, 0.2);
+            border-radius: 50%;
+            border-top: 4px solid var(--primary-color);
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 主题切换器 */
+        .theme-switcher {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .theme-switcher input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        .theme-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        
+        /* 语言切换器 */
+        .lang-switcher {
+            position: relative;
+        }
+        
+        .lang-btn {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+            padding: 5px 10px;
+            border-radius: var(--element-radius);
+            transition: var(--transition);
+        }
+        
+        .lang-btn:hover {
+            background-color: var(--surface-bg);
+        }
+        
+        .lang-options {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background-color: var(--card-bg);
+            border-radius: var(--element-radius);
+            box-shadow: var(--shadow-md);
+            padding: 10px 0;
+            width: 120px;
+            display: none;
+            z-index: 10;
+        }
+        
+        .lang-options.active {
+            display: block;
+        }
+        
+        .lang-option {
+            padding: 8px 15px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .lang-option:hover {
+            background-color: var(--surface-bg);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部区域 -->
+        <header>
+            <div class="logo">
+                <div class="logo-icon">CM</div>
+                <div class="logo-text">
+                    <h1 id="app-title">CM加解密工具</h1>
+                    <p id="app-subtitle">基于旋转移位加密算法 (RSC)</p>
+                </div>
+            </div>
+            
+            <div class="header-controls">
+                <div class="theme-label">
+                    <span id="theme-label">深色模式</span>
+                    <label class="theme-switcher">
+                        <input type="checkbox" id="theme-toggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                
+                <div class="lang-switcher">
+                    <button class="lang-btn" id="lang-btn">
+                        <span id="current-lang">简体中文</span>
+                        <span>▼</span>
+                    </button>
+                    <div class="lang-options" id="lang-options">
+                        <div class="lang-option" data-lang="zh">简体中文</div>
+                        <div class="lang-option" data-lang="en">English</div>
+                    </div>
+                </div>
+                
+                <button class="btn btn-outline" id="about-btn">
+                    <span>ⓘ</span>
+                    <span id="about-text">关于</span>
+                </button>
+            </div>
+        </header>
+        
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <!-- 输入区域 -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span>📝</span>
+                        <span id="input-title">输入区域</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="mode-toggle">
+                        <div class="mode-btn active" data-mode="encrypt" id="encrypt-mode">加密</div>
+                        <div class="mode-btn" data-mode="decrypt" id="decrypt-mode">解密</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="input-text" id="input-label">输入文本</label>
+                        <textarea id="input-text" placeholder="在此输入要加密或解密的文本..."></textarea>
+                        <div class="char-count" id="input-count">0 字符</div>
+                    </div>
+                    
+                    <div class="form-group key-input">
+                        <label for="key" id="key-label">密钥</label>
+                        <input type="text" id="key" placeholder="输入加密密钥（至少6个字符）..." value="">
+                        <div class="key-strength">
+                            <span id="strength-label">密钥强度:</span>
+                            <div class="strength-meter">
+                                <div class="strength-fill" id="key-strength-fill"></div>
+                            </div>
+                            <span id="key-strength-text">弱</span>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" id="process-btn">
+                            <span>🔒</span>
+                            <span id="process-text">加密文本</span>
+                        </button>
+                        <button class="btn btn-outline" id="clear-btn">
+                            <span>🗑️</span>
+                            <span id="clear-text">清空</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 输出区域 -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span>🔐</span>
+                        <span id="output-title">输出结果</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="loading" id="loading">
+                        <div class="spinner"></div>
+                        <p id="loading-text">处理中，请稍候...</p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="output-text" id="output-label">结果文本</label>
+                        <textarea id="output-text" readonly placeholder="加密或解密后的文本将显示在这里..."></textarea>
+                        <div class="char-count" id="output-count">0 字符</div>
+                    </div>
+                    
+                    <div class="result-card">
+                        <div class="action-buttons">
+                            <button class="btn btn-outline" id="copy-btn">
+                                <span>📋</span>
+                                <span id="copy-text">复制结果</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部区域 -->
+        <footer>
+            <p id="footer-text">CM加解密工具 © 2025 clcwpwqi | 基于旋转移位加密算法 (RSC)</p>
+            <a href="https://github.com/clcwpwqi/cm_encryption_algorithm" class="github-link" target="_blank">
+                <span>GitHub</span>
+                <span>→</span>
+            </a>
+        </footer>
+    </div>
+    
+    <!-- 关于弹窗 -->
+    <div class="modal" id="about-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-title">关于旋转移位加密算法 (RSC)</h3>
+                <button class="close-btn" id="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="info-section">
+                    <p id="modal-description">RSC算法是一种简单高效的加密算法，支持所有Unicode字符（包括汉字、符号和字母）。它通过对字符的Unicode码点进行旋转移位，然后与动态生成的密钥流进行异或操作来实现加密。</p>
+                    
+                    <div class="info-points">
+                        <div class="info-point">
+                            <h4><span>✅</span> <span id="feature-title">算法特点</span></h4>
+                            <ul>
+                                <li id="feature1">支持全Unicode字符集</li>
+                                <li id="feature2">动态密钥流增强安全性</li>
+                                <li id="feature3">相同字符在不同位置加密结果不同</li>
+                                <li id="feature4">高效线性时间复杂度</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="info-point">
+                            <h4><span>🔑</span> <span id="usage-title">使用建议</span></h4>
+                            <ul>
+                                <li id="usage1">使用至少6字符的复杂密钥</li>
+                                <li id="usage2">包含字母、数字和符号的组合</li>
+                                <li id="usage3">适用于短文本加密（消息、配置）</li>
+                                <li id="usage4">不用于高安全性需求场景</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 加密算法实现
+        const SEPARATOR = "|";
+        
+        // 生成密钥流
+        function generateKeyStream(key, length) {
+            const keyCodes = Array.from(key).map(k => k.charCodeAt(0));
+            const shiftList = [];
+            const xorList = [];
+            const keyLen = keyCodes.length;
+            
+            for (let i = 0; i < length; i++) {
+                const shift = (keyCodes[i % keyLen] + i) % 31 + 1;
+                const xorVal = (keyCodes[(i + 3) % keyLen] * i) % 0x10FFFF;
+                shiftList.push(shift);
+                xorList.push(xorVal);
+            }
+            
+            return [shiftList, xorList];
+        }
+        
+        // 循环移位函数
+        function rotateShift(n, shift) {
+            // 确保是32位无符号整数
+            n = n >>> 0;
+            shift = shift % 32;
+            
+            if (shift === 0) return n;
+            if (shift > 0) {
+                // 左旋
+                return ((n << shift) | (n >>> (32 - shift))) >>> 0;
+            } else {
+                // 右旋（负值）
+                shift = -shift;
+                return ((n >>> shift) | (n << (32 - shift))) >>> 0;
+            }
+        }
+        
+        // 加密函数
+        function encrypt(plaintext, key) {
+            if (!key) throw new Error("密钥不能为空");
+            
+            const [shiftList, xorList] = generateKeyStream(key, plaintext.length);
+            const cipherParts = [];
+            
+            for (let i = 0; i < plaintext.length; i++) {
+                const char = plaintext[i];
+                const codepoint = char.charCodeAt(0);
+                const shifted = rotateShift(codepoint, shiftList[i]);
+                const encrypted = shifted ^ xorList[i];
+                cipherParts.push(encrypted.toString());
+            }
+            
+            return cipherParts.join(SEPARATOR);
+        }
+        
+        // 解密函数
+        function decrypt(ciphertext, key) {
+            if (!key) throw new Error("密钥不能为空");
+            
+            const parts = ciphertext.split(SEPARATOR);
+            if (parts.length === 0) return "";
+            
+            const [shiftList, xorList] = generateKeyStream(key, parts.length);
+            const plainChars = [];
+            
+            for (let i = 0; i < parts.length; i++) {
+                const encrypted = parseInt(parts[i], 10);
+                const decrypted = encrypted ^ xorList[i];
+                const original = rotateShift(decrypted, -shiftList[i]);
+                plainChars.push(String.fromCharCode(original));
+            }
+            
+            return plainChars.join("");
+        }
+        
+        // ====================== UI 功能 ======================
+        // DOM元素
+        const plaintextEl = document.getElementById('input-text');
+        const ciphertextEl = document.getElementById('output-text');
+        const keyEl = document.getElementById('key');
+        const processBtn = document.getElementById('process-btn');
+        const clearBtn = document.getElementById('clear-btn');
+        const copyBtn = document.getElementById('copy-btn');
+        const aboutBtn = document.getElementById('about-btn');
+        const loadingEl = document.getElementById('loading');
+        const inputCount = document.getElementById('input-count');
+        const outputCount = document.getElementById('output-count');
+        const keyStrengthFill = document.getElementById('key-strength-fill');
+        const keyStrengthText = document.getElementById('key-strength-text');
+        const themeToggle = document.getElementById('theme-toggle');
+        const langBtn = document.getElementById('lang-btn');
+        const langOptions = document.getElementById('lang-options');
+        const aboutModal = document.getElementById('about-modal');
+        const closeModal = document.getElementById('close-modal');
+        const encryptMode = document.getElementById('encrypt-mode');
+        const decryptMode = document.getElementById('decrypt-mode');
+        
+        // 当前模式 (encrypt/decrypt)
+        let currentMode = 'encrypt';
+        
+        // 语言资源
+        const resources = {
+            zh: {
+                appTitle: "CM加解密工具",
+                appSubtitle: "基于旋转移位加密算法 (RSC)",
+                inputTitle: "输入区域",
+                inputLabel: "输入文本",
+                inputPlaceholder: "在此输入要加密或解密的文本...",
+                keyLabel: "密钥",
+                keyPlaceholder: "输入加密密钥（至少6个字符）...",
+                strengthLabel: "密钥强度:",
+                encryptText: "加密文本",
+                decryptText: "解密文本",
+                clearText: "清空",
+                outputTitle: "输出结果",
+                outputLabel: "结果文本",
+                outputPlaceholder: "加密或解密后的文本将显示在这里...",
+                copyText: "复制结果",
+                loadingText: "处理中，请稍候...",
+                footerText: "CM加解密工具 © 2025 clcwpwqi | 基于旋转移位加密算法 (RSC)",
+                aboutText: "关于",
+                themeLabel: "深色模式",
+                encryptMode: "加密",
+                decryptMode: "解密",
+                modalTitle: "关于旋转移位加密算法 (RSC)",
+                modalDescription: "RSC算法是一种简单高效的加密算法，支持所有Unicode字符（包括汉字、符号和字母）。它通过对字符的Unicode码点进行旋转移位，然后与动态生成的密钥流进行异或操作来实现加密。",
+                featureTitle: "算法特点",
+                feature1: "支持全Unicode字符集",
+                feature2: "动态密钥流增强安全性",
+                feature3: "相同字符在不同位置加密结果不同",
+                feature4: "高效线性时间复杂度",
+                usageTitle: "使用建议",
+                usage1: "使用至少6字符的复杂密钥",
+                usage2: "包含字母、数字和符号的组合",
+                usage3: "适用于短文本加密（消息、配置）",
+                usage4: "不用于高安全性需求场景"
+            },
+            en: {
+                appTitle: "CM Encryption Tool",
+                appSubtitle: "Based on Rotating Shift Cipher (RSC)",
+                inputTitle: "Input Area",
+                inputLabel: "Input Text",
+                inputPlaceholder: "Enter text to encrypt or decrypt here...",
+                keyLabel: "Key",
+                keyPlaceholder: "Enter encryption key (at least 6 characters)...",
+                strengthLabel: "Key Strength:",
+                encryptText: "Encrypt Text",
+                decryptText: "Decrypt Text",
+                clearText: "Clear",
+                outputTitle: "Output Result",
+                outputLabel: "Result Text",
+                outputPlaceholder: "Encrypted or decrypted text will appear here...",
+                copyText: "Copy Result",
+                loadingText: "Processing, please wait...",
+                footerText: "CM Encryption Tool © 2025 clcwpwqi | Based on Rotating Shift Cipher (RSC)",
+                aboutText: "About",
+                themeLabel: "Dark Mode",
+                encryptMode: "Encrypt",
+                decryptMode: "Decrypt",
+                modalTitle: "About Rotating Shift Cipher (RSC)",
+                modalDescription: "RSC is a simple and efficient encryption algorithm that supports all Unicode characters (including Chinese characters, symbols, and letters). It encrypts text by performing a rotating shift on the Unicode code points of characters and then applying an XOR operation with a dynamically generated key stream.",
+                featureTitle: "Algorithm Features",
+                feature1: "Supports full Unicode character set",
+                feature2: "Dynamic key stream enhances security",
+                feature3: "Same characters encrypted differently at different positions",
+                feature4: "Efficient linear time complexity",
+                usageTitle: "Usage Recommendations",
+                usage1: "Use a complex key of at least 6 characters",
+                usage2: "Include a combination of letters, numbers and symbols",
+                usage3: "Suitable for short text encryption (messages, configurations)",
+                usage4: "Not for high-security scenarios"
+            }
+        };
+        
+        // 当前语言
+        let currentLang = 'zh';
+        
+        // 应用语言
+        function applyLanguage(lang) {
+            currentLang = lang;
+            const langData = resources[lang];
+            
+            // 更新所有文本
+            document.getElementById('app-title').textContent = langData.appTitle;
+            document.getElementById('app-subtitle').textContent = langData.appSubtitle;
+            document.getElementById('input-title').textContent = langData.inputTitle;
+            document.getElementById('input-label').textContent = langData.inputLabel;
+            plaintextEl.placeholder = langData.inputPlaceholder;
+            document.getElementById('key-label').textContent = langData.keyLabel;
+            keyEl.placeholder = langData.keyPlaceholder;
+            document.getElementById('strength-label').textContent = langData.strengthLabel;
+            document.getElementById('process-text').textContent = currentMode === 'encrypt' ? langData.encryptText : langData.decryptText;
+            document.getElementById('clear-text').textContent = langData.clearText;
+            document.getElementById('output-title').textContent = langData.outputTitle;
+            document.getElementById('output-label').textContent = langData.outputLabel;
+            ciphertextEl.placeholder = langData.outputPlaceholder;
+            document.getElementById('copy-text').textContent = langData.copyText;
+            document.getElementById('loading-text').textContent = langData.loadingText;
+            document.getElementById('footer-text').textContent = langData.footerText;
+            document.getElementById('about-text').textContent = langData.aboutText;
+            document.getElementById('theme-label').textContent = langData.themeLabel;
+            document.getElementById('encrypt-mode').textContent = langData.encryptMode;
+            document.getElementById('decrypt-mode').textContent = langData.decryptMode;
+            document.getElementById('modal-title').textContent = langData.modalTitle;
+            document.getElementById('modal-description').textContent = langData.modalDescription;
+            document.getElementById('feature-title').textContent = langData.featureTitle;
+            document.getElementById('feature1').textContent = langData.feature1;
+            document.getElementById('feature2').textContent = langData.feature2;
+            document.getElementById('feature3').textContent = langData.feature3;
+            document.getElementById('feature4').textContent = langData.feature4;
+            document.getElementById('usage-title').textContent = langData.usageTitle;
+            document.getElementById('usage1').textContent = langData.usage1;
+            document.getElementById('usage2').textContent = langData.usage2;
+            document.getElementById('usage3').textContent = langData.usage3;
+            document.getElementById('usage4').textContent = langData.usage4;
+            document.getElementById('current-lang').textContent = lang === 'zh' ? '简体中文' : 'English';
+        }
+        
+        // 更新字符计数
+        function updateCharCounts() {
+            inputCount.textContent = `${plaintextEl.value.length} 字符`;
+            outputCount.textContent = `${ciphertextEl.value.length} 字符`;
+        }
+        
+        // 更新密钥强度
+        function updateKeyStrength() {
+            const key = keyEl.value;
+            let strength = 0;
+            
+            if (key.length >= 6) strength += 25;
+            if (key.length >= 10) strength += 15;
+            if (/[A-Z]/.test(key)) strength += 15;
+            if (/[a-z]/.test(key)) strength += 15;
+            if (/[0-9]/.test(key)) strength += 15;
+            if (/[^A-Za-z0-9]/.test(key)) strength += 15;
+            
+            strength = Math.min(strength, 100);
+            keyStrengthFill.style.width = `${strength}%`;
+            
+            if (strength < 40) {
+                keyStrengthFill.style.background = '#ff6b6b';
+                keyStrengthText.textContent = currentLang === 'zh' ? '弱' : 'Weak';
+            } else if (strength < 70) {
+                keyStrengthFill.style.background = '#ffd166';
+                keyStrengthText.textContent = currentLang === 'zh' ? '中等' : 'Medium';
+            } else {
+                keyStrengthFill.style.background = '#06d6a0';
+                keyStrengthText.textContent = currentLang === 'zh' ? '强' : 'Strong';
+            }
+        }
+        
+        // 显示加载状态
+        function showLoading() {
+            loadingEl.style.display = 'block';
+        }
+        
+        // 隐藏加载状态
+        function hideLoading() {
+            loadingEl.style.display = 'none';
+        }
+        
+        // 处理文本（加密/解密）
+        function processText() {
+            try {
+                showLoading();
+                
+                if (currentMode === 'encrypt') {
+                    const plaintext = plaintextEl.value;
+                    const key = keyEl.value;
+                    
+                    if (!plaintext) {
+                        alert(currentLang === 'zh' ? '请输入要加密的文本' : 'Please enter text to encrypt');
+                        return;
+                    }
+                    
+                    if (!key || key.length < 6) {
+                        alert(currentLang === 'zh' ? '密钥至少需要6个字符' : 'Key requires at least 6 characters');
+                        return;
+                    }
+                    
+                    const ciphertext = encrypt(plaintext, key);
+                    ciphertextEl.value = ciphertext;
+                } else {
+                    const ciphertext = plaintextEl.value;
+                    const key = keyEl.value;
+                    
+                    if (!ciphertext) {
+                        alert(currentLang === 'zh' ? '请输入要解密的密文' : 'Please enter ciphertext to decrypt');
+                        return;
+                    }
+                    
+                    if (!key) {
+                        alert(currentLang === 'zh' ? '请输入密钥' : 'Please enter key');
+                        return;
+                    }
+                    
+                    const plaintext = decrypt(ciphertext, key);
+                    ciphertextEl.value = plaintext;
+                }
+                
+                updateCharCounts();
+                
+                setTimeout(hideLoading, 300);
+            } catch (error) {
+                hideLoading();
+                alert(`${currentLang === 'zh' ? '处理错误:' : 'Processing error:'} ${error.message}`);
+                console.error(error);
+            }
+        }
+        
+        // 清空处理
+        function handleClear() {
+            plaintextEl.value = '';
+            ciphertextEl.value = '';
+            updateCharCounts();
+        }
+        
+        // 复制结果
+        function handleCopy() {
+            if (!ciphertextEl.value) {
+                alert(currentLang === 'zh' ? '没有内容可复制' : 'No content to copy');
+                return;
+            }
+            
+            ciphertextEl.select();
+            document.execCommand('copy');
+            
+            // 显示复制成功反馈
+            const originalText = copyBtn.innerHTML;
+            copyBtn.innerHTML = `<span>✓</span> <span>${currentLang === 'zh' ? '已复制' : 'Copied'}</span>`;
+            
+            setTimeout(() => {
+                copyBtn.innerHTML = originalText;
+            }, 2000);
+        }
+        
+        // 切换模式
+        function setMode(mode) {
+            currentMode = mode;
+            
+            // 更新按钮状态
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`.mode-btn[data-mode="${mode}"]`).classList.add('active');
+            
+            // 更新处理按钮文本
+            document.getElementById('process-text').textContent = 
+                mode === 'encrypt' ? resources[currentLang].encryptText : resources[currentLang].decryptText;
+            
+            // 清空输出
+            ciphertextEl.value = '';
+            updateCharCounts();
+        }
+        
+        // 初始化
+        function init() {
+            // 初始语言
+            applyLanguage('zh');
+            
+            // 初始模式
+            setMode('encrypt');
+            
+            // 事件监听器
+            plaintextEl.addEventListener('input', updateCharCounts);
+            ciphertextEl.addEventListener('input', updateCharCounts);
+            keyEl.addEventListener('input', updateKeyStrength);
+            processBtn.addEventListener('click', processText);
+            clearBtn.addEventListener('click', handleClear);
+            copyBtn.addEventListener('click', handleCopy);
+            aboutBtn.addEventListener('click', () => aboutModal.classList.add('active'));
+            closeModal.addEventListener('click', () => aboutModal.classList.remove('active'));
+            
+            // 点击弹窗外部关闭
+            aboutModal.addEventListener('click', (e) => {
+                if (e.target === aboutModal) {
+                    aboutModal.classList.remove('active');
+                }
+            });
+            
+            // 语言切换
+            langBtn.addEventListener('click', () => {
+                langOptions.classList.toggle('active');
+            });
+            
+            // 选择语言
+            document.querySelectorAll('.lang-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    const lang = option.dataset.lang;
+                    applyLanguage(lang);
+                    langOptions.classList.remove('active');
+                });
+            });
+            
+            // 模式切换
+            encryptMode.addEventListener('click', () => setMode('encrypt'));
+            decryptMode.addEventListener('click', () => setMode('decrypt'));
+            
+            // 主题切换
+            themeToggle.addEventListener('change', () => {
+                if (themeToggle.checked) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                } else {
+                    document.documentElement.removeAttribute('data-theme');
+                }
+            });
+            
+            // 初始字符计数
+            updateCharCounts();
+            updateKeyStrength();
+            
+            // 示例：自动加密初始文本
+            setTimeout(() => {
+                processText();
+            }, 500);
+        }
+        
+        // 页面加载完成后初始化
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+  </html>
